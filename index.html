@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Galaktik Oyunlar</title>
+    <style>
+        :root {
+            --space-pink: #ff69b4;
+            --alien-green: #00ff88;
+        }
+
+        body {
+            background: radial-gradient(circle, #000044, #000);
+            color: white;
+            font-family: 'Comic Sans MS', cursive;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .game-card {
+            background: #ffffff15;
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px var(--space-pink);
+        }
+
+        #meteorGame {
+            height: 400px;
+            background: url('https://i.imgur.com/ZKj5yWk.png');
+        }
+
+        .meteor {
+            position: absolute;
+            font-size: 40px;
+            animation: meteorFall 3s linear;
+        }
+
+        #heightJump {
+            background: url('https://i.imgur.com/8Q5Y7hG.png');
+            height: 400px;
+        }
+
+        .sila-jump {
+            position: absolute;
+            font-size: 60px;
+            bottom: 0;
+            left: 50%;
+            transition: 0.5s;
+        }
+
+        .obstacle {
+            position: absolute;
+            font-size: 40px;
+            bottom: 0;
+            right: -100px;
+        }
+
+        @keyframes meteorFall {
+            from { transform: translateY(-100px) rotate(0deg); }
+            to { transform: translateY(100vh) rotate(720deg); }
+        }
+
+        .score-board {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #000000aa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid var(--alien-green);
+        }
+
+        #truthOrLie {
+            background: #ff000020;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 15px;
+        }
+
+        .lie-button {
+            background: #ff69b4;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .lie-button:hover {
+            transform: scale(1.1);
+            filter: hue-rotate(90deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="score-board">
+        <h2>🌟 Galaktik Puan: <span id="score">0</span></h2>
+        <div>🍪 Yakalanan Kurabiye: <span id="cookies">0</span></div>
+    </div>
+
+    <div class="game-container">
+        <div class="game-card" id="meteorGame">
+            <h2>☄️ Göktaşı Yakalama Oyunu</h2>
+            <div class="sila-jump">👧</div>
+        </div>
+
+        <div class="game-card" id="heightJump">
+            <h2>📏 158cm Engel Atlama</h2>
+            <div class="sila-jump">🚀</div>
+            <div class="obstacle" id="obstacle">🍪</div>
+        </div>
+    </div>
+
+    <div id="truthOrLie">
+        <h2>🤥 Muhammetcan'ın Saçmalama Testi</h2>
+        <div id="lieQuestion"></div>
+        <button class="lie-button" onclick="checkAnswer(true)">Doğru</button>
+        <button class="lie-button" onclick="checkAnswer(false)">Saçma</button>
+    </div>
+
+<script>
+// Oyun 1: Göktaşı Yakalama
+let score = 0;
+let cookies = 0;
+
+function createMeteor() {
+    const meteor = document.createElement('div');
+    meteor.className = 'meteor';
+    meteor.style.left = Math.random() * 90 + '%';
+    meteor.textContent = Math.random() > 0.5 ? '☄️' : '🍪';
+    meteor.onclick = () => {
+        meteor.remove();
+        if(meteor.textContent === '🍪') {
+            cookies++;
+            document.getElementById('cookies').textContent = cookies;
+            alert("Kozmik Kurabiye Yakalandı!\nSıla'nın boyu +0.000001cm 🍪");
+        }
+        score += 100;
+        document.getElementById('score').textContent = score;
+    };
+    document.getElementById('meteorGame').appendChild(meteor);
+    
+    setTimeout(() => meteor.remove(), 2900);
+}
+
+setInterval(createMeteor, 2000);
+
+// Oyun 2: Engel Atlama
+let isJumping = false;
+let obstacleInterval;
+
+function startGame() {
+    const obstacle = document.getElementById('obstacle');
+    let position = -100;
+    
+    obstacleInterval = setInterval(() => {
+        position += 10;
+        obstacle.style.right = position + 'px';
+        
+        if(position > window.innerWidth) {
+            position = -100;
+            score += 50;
+            document.getElementById('score').textContent = score;
+        }
+        
+        // Çarpışma kontrolü
+        if(position > 40 && position < 60 && !isJumping) {
+            alert("Engel çarptı! Muhammetcan'ın saçmalarına yenildin! 😜");
+            score = Math.floor(score * 0.8);
+            document.getElementById('score').textContent = score;
+        }
+    }, 50);
+}
+
+document.addEventListener('keydown', (e) => {
+    if(e.code === 'Space' && !isJumping) {
+        const sila = document.querySelector('#heightJump .sila-jump');
+        isJumping = true;
+        sila.style.bottom = '200px';
+        setTimeout(() => {
+            sila.style.bottom = '0';
+            isJumping = false;
+        }, 800);
+    }
+});
+
+startGame();
+
+// Oyun 3: Saçmalık Testi
+const crazyFacts = [
+    "Muhammetcan'ın soyadı NASA tarafından icat edildi",
+    "Sıla 158cm değil aslında 157.9999cm",
+    "Göktaşları Sıla'nın ayakkabı koleksiyonundan geliyor",
+    "Muhammetcan'ın saçmaları kuantum fiziğini açıklıyor",
+    "Bu web sitesi aslında bir uzay mekiği"
+];
+
+const answers = [false, true, false, false, true]; // Rastgele cevaplar
+
+let currentQuestion = 0;
+
+function newQuestion() {
+    document.getElementById('lieQuestion').textContent = crazyFacts[currentQuestion];
+}
+
+function checkAnswer(userAnswer) {
+    const correct = (answers[currentQuestion] === userAnswer);
+    if(correct) {
+        score += 200;
+        alert("🧠 Doğru! Muhammetcan bile şaşırdı!");
+    } else {
+        score -= 100;
+        alert("💥 Yanlış! Bu saçmalık seviyesi seni yendi!");
+    }
+    document.getElementById('score').textContent = score;
+    currentQuestion = (currentQuestion + 1) % crazyFacts.length;
+    newQuestion();
+}
+
+newQuestion();
+
+// Bonus: Gizli Kod
+document.addEventListener('keypress', (e) => {
+    if(e.key === 'm') {
+        document.body.style.background = "url('https://i.gifer.com/embedded/download/ErZ8.gif')";
+        alert("🚨 MEGA SAÇMALIK MODU AKTİF! 🚨\nMuhammetcan'ın gücü %158 arttı!");
+    }
+});
+</script>
+</body>
+</html>
